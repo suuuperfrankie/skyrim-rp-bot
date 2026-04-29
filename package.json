@@ -1,0 +1,36 @@
+{
+  "name": "skyrim-rp-bot",
+  "version": "0.3.1",
+  "description": "Twitch chat bot that collects !suggest RP prompts and lets chat vote 1/2/3, with an OBS overlay.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build:icon": "node scripts/make-icon.js",
+    "build": "node scripts/build.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "open": "^10.1.0",
+    "tmi.js": "^1.8.5",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^5.16.1",
+    "esbuild": "^0.28.0",
+    "jimp": "^0.22.12",
+    "png-to-ico": "^2.1.8",
+    "rcedit": "^5.0.2"
+  },
+  "pkg": {
+    "targets": [
+      "node22-win-x64"
+    ],
+    "outputPath": "dist",
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": []
+  }
+}

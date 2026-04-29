@@ -1,0 +1,735 @@
+/* ============================================================
+   Skyrim RP Overlay theme.
+   Custom fonts loaded from /assets/fonts.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Planewalker';
+  src: url('/assets/fonts/Planewalker.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SkyrimBooks';
+  src: url('/assets/fonts/SkyrimBooks_Gaelic.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'FuturaCondLight';
+  src: url('/assets/fonts/Futura Condensed Light Regular.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'FuturaCondMedium';
+  src: url('/assets/fonts/Futura Condensed Medium.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'FuturaCondBold';
+  src: url('/assets/fonts/Futura Condensed Bold.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  --ink: #f1e2bd;
+  --ink-bright: #fff5d6;
+  --ink-dim: #b9a376;
+  --gold: #d8b56a;
+  --gold-bright: #f3d98c;
+  --shadow: rgba(0, 0, 0, 0.85);
+  --parchment: #1a1410;
+  --parchment-edge: #0c0907;
+  --accent: #6a8fb5;       /* Skyrim icy blue */
+  --danger: #b54a3b;
+  --bar-bg: rgba(0, 0, 0, 0.6);
+  --serif: 'SkyrimBooks', 'Cinzel', 'Times New Roman', serif;
+  --display: 'Planewalker', 'Cinzel Decorative', serif;
+  --ui: 'FuturaCondLight', 'Cinzel', sans-serif;
+
+  /* Customizable knobs (overridden live by the dashboard's Customize tab). */
+  --voting-title-font-size: 1.5rem;
+  --voting-title-margin-top: 7rem;
+  --voting-title-padding-left: 6.5rem;
+  --voting-title-stroke: 3px;
+  --voting-title-timer-right: 8rem;
+  --finalist-font-size: 2rem;
+  --finalist-letter-spacing: 0em;
+  --finalist-padding-top: 95px;
+  --finalist-padding-left: 90px;
+  --finalist-stroke: 3px;
+  --png-height: 105vh;
+  --png-brightness: 0.8;
+  --png-contrast: 1.7;
+  --card-opacity: 0.95;
+
+  /* Suggestions panel knobs */
+  --suggestions-title-font-size: 1.4rem;
+  --suggestions-instruction-font-size: 1.5rem;
+  --suggestions-count-font-size: 2.6rem;
+  --suggestions-count-label-font-size: 0.95rem;
+  --suggestions-title-margin-bottom: 1.2rem;
+  --titlebox-opacity: 1;
+  /* Voting panel position offsets (0 = anchored at canvas center). */
+  --voting-offset-x: 0px;
+  --voting-offset-y: 0px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;     /* OBS treats transparent body as transparent */
+  font-family: var(--ui);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Canvas: full 1920x1080 (OBS browser source recommended size). */
+#root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  pointer-events: none;
+  overflow: hidden;
+}
+#root.hidden { display: none; }
+
+/* ---- Phase containers ---- */
+.phase {
+  position: absolute;
+  pointer-events: none;
+  display: none;
+}
+.phase.active   { display: block; }
+.phase.entering { display: block; }
+.phase.leaving  { display: block; }
+
+/* ---- Collecting: top-right corner, slides in/out from the right ---- */
+#collecting {
+  top: 4vh;
+  right: 3vw;
+  width: 24vw;
+  max-width: 470px;
+  min-width: 320px;
+  will-change: opacity, transform;
+}
+#collecting.entering { animation: slide-in-from-right 0.65s cubic-bezier(0.18, 0.85, 0.18, 1.02) both; }
+#collecting.leaving  { animation: slide-out-to-right   0.55s cubic-bezier(0.55, 0, 0.78, 0.4) both; }
+
+@keyframes slide-in-from-right {
+  0%   { transform: translate3d(140%, 0, 0); }
+  75%  { transform: translate3d(-1.5%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes slide-out-to-right {
+  0%   { transform: translate3d(0, 0, 0); }
+  20%  { transform: translate3d(-1.5%, 0, 0); }
+  100% { transform: translate3d(140%, 0, 0); }
+}
+
+/* ---- Voting / winner: PNG line at screen center, content extends right ---- */
+#voting {
+  top: 50%;
+  left: 50%;          /* left edge at screen center */
+  width: min(700px, 48vw);
+  transform: translate(var(--voting-offset-x), calc(-50% + var(--voting-offset-y)));
+  will-change: opacity, transform;
+}
+#voting.entering { animation: dialogue-fade-in 0.7s ease-out both; }
+#voting.leaving  { animation: dialogue-fade-out 0.6s ease-in  both; }
+
+@keyframes dialogue-fade-in {
+  from { opacity: 0; transform: translate(var(--voting-offset-x), calc(-50% + var(--voting-offset-y))) scale(0.97); }
+  to   { opacity: 1; transform: translate(var(--voting-offset-x), calc(-50% + var(--voting-offset-y))) scale(1); }
+}
+@keyframes dialogue-fade-out {
+  from { opacity: 1; transform: translate(var(--voting-offset-x), calc(-50% + var(--voting-offset-y))) scale(1); }
+  to   { opacity: 0; transform: translate(var(--voting-offset-x), calc(-50% + var(--voting-offset-y))) scale(1.02); }
+}
+
+/* ---- Card Large frame still used for the collecting panel ---- */
+.frame {
+  width: 100%;
+  background: none;
+  border: none;
+  box-shadow:
+    0 0 50px rgba(0, 0, 0, 0.4),
+    0 0 80px rgba(0, 0, 0, 0.25);
+  padding: 2.4rem 3.4rem 2.6rem;
+  position: relative;
+  z-index: 0;            /* establish stacking context so ::before's -1 stays inside .frame */
+}
+.frame::before {
+  /* Background card art rendered separately so we can fade only the dark parts,
+     not the text on top. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/images/Card%20Large.png') no-repeat center / 100% 100%;
+  opacity: var(--card-opacity);
+  z-index: -1;
+  pointer-events: none;
+}
+.frame > .footer-cap {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 24px;
+  background: url('/assets/images/Scroll%20Bar%20Bottom.png') no-repeat center / contain;
+  pointer-events: none;
+}
+
+/* removed parchment hairlines - Card Large already has its own border art */
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--suggestions-title-margin-bottom);
+  padding: 0;
+  width: 100%;
+  background: none;
+  border: none;
+  box-shadow: none;
+  min-height: 130px;
+  position: relative;
+  z-index: 0;
+}
+.banner::before {
+  /* titlebox bg rendered separately so opacity doesn't dim the title text */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/images/titlebox.png') no-repeat center / 100% 100%;
+  opacity: var(--titlebox-opacity);
+  z-index: -1;
+  pointer-events: none;
+}
+.banner-icon { display: none; }
+.banner h1 {
+  font-family: var(--ui);
+  font-size: var(--suggestions-title-font-size);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  white-space: nowrap;
+  color: var(--ink-bright);
+  text-shadow:
+    0 0 1px var(--gold),
+    0 0 12px rgba(243, 217, 140, 0.35),
+    0 2px 0 rgba(0, 0, 0, 0.9);
+}
+
+.instruction {
+  text-align: center;
+  font-size: var(--suggestions-instruction-font-size);
+  letter-spacing: 0.04em;
+  color: var(--ink-bright);
+  margin-bottom: 1rem;
+  text-shadow: 0 0 12px rgba(243, 217, 140, 0.25);
+}
+#collecting .instruction {
+  font-size: var(--suggestions-instruction-font-size);
+  letter-spacing: 0.04em;
+  color: var(--ink-bright);
+  margin-bottom: 1.1rem;
+  text-shadow: 0 0 12px rgba(243, 217, 140, 0.3);
+}
+.instruction code,
+.instruction b {
+  color: var(--gold-bright);
+  font-style: normal;
+  font-family: inherit;
+}
+
+.counter {
+  text-align: center;
+  margin: 0.8rem 0 1.2rem;
+}
+.counter > span:first-child {
+  display: block;
+  font-size: var(--suggestions-count-font-size);
+  font-weight: 600;
+  color: var(--ink-bright);
+  text-shadow: 0 0 18px rgba(243, 217, 140, 0.4);
+  line-height: 1;
+}
+.counter-label {
+  font-family: var(--ui);
+  font-size: var(--suggestions-count-label-font-size);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.finalists {
+  list-style: none;
+  margin: 0.4rem 0 1.2rem;
+}
+/* legacy .finalists rule kept in case anything still references it; main voting view now uses .dialogue-options */
+.finalists li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.3rem 1.6rem 1.3rem 4.6rem;
+  margin-bottom: 0.9rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3px solid var(--gold);
+  border-radius: 2px;
+  font-size: 2.5rem;
+  color: var(--ink);
+}
+
+/* ============================================================
+   Dialogue-style voting layout (Skyrim conversation UI)
+   ============================================================ */
+.frame.voting-mode {
+  background: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+}
+.frame.voting-mode .banner,
+.frame.voting-mode > .footer-cap {
+  display: none;
+}
+
+/* Common stroke + soft shadow used by all dialogue text so it pops over any background. */
+.dialogue-text-stroke {
+  text-shadow:
+    -1.5px -1.5px 0 #000,
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0 0 6px rgba(0, 0, 0, 0.95);
+}
+
+.dialogue-title {
+  font-family: var(--ui);
+  font-size: var(--voting-title-font-size);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ffffff;
+  /* 8-direction stroke driven by --voting-title-stroke */
+  text-shadow:
+    calc(var(--voting-title-stroke) * -1) calc(var(--voting-title-stroke) * -1) 0 #000,
+    var(--voting-title-stroke) calc(var(--voting-title-stroke) * -1) 0 #000,
+    calc(var(--voting-title-stroke) * -1) var(--voting-title-stroke) 0 #000,
+    var(--voting-title-stroke) var(--voting-title-stroke) 0 #000,
+    calc(var(--voting-title-stroke) * -1) 0 0 #000,
+    var(--voting-title-stroke) 0 0 #000,
+    0 calc(var(--voting-title-stroke) * -1) 0 #000,
+    0 var(--voting-title-stroke) 0 #000;
+  margin: var(--voting-title-margin-top) 0 0.45rem;
+  padding-left: var(--voting-title-padding-left);
+}
+
+.title-timer {
+  height: 3px;
+  margin: 0 var(--voting-title-timer-right) 1rem var(--voting-title-padding-left);
+  background: rgba(255, 255, 255, 0.18);
+  position: relative;
+}
+.title-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.85);
+  transition: width 0.2s linear;
+}
+
+/* The PNG is rendered as an absolutely-positioned <img> so it can be much larger
+   than the dialogue text area without being clipped by it. Anchored to the left
+   edge of #voting (which sits at screen center). */
+.dialogue-png {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) translateZ(0);
+  height: var(--png-height);
+  width: auto;
+  max-width: none;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  will-change: filter, opacity, transform;
+  /* Heavy darkening + soft halo so the dialogue area feels much weightier
+     and the text reads better over any background. */
+  filter:
+    brightness(var(--png-brightness))
+    contrast(var(--png-contrast))
+    drop-shadow(0 0 40px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 90px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 160px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 240px rgba(0, 0, 0, 0.9));
+}
+
+.dialogue {
+  /* PNG is no longer a background of this element */
+  background: none;
+  min-height: 320px;
+  padding: 0.5rem 0;
+  position: relative;
+  z-index: 1;          /* sit above the img */
+}
+.dialogue-title {
+  position: relative;
+  z-index: 1;          /* sit above the img */
+}
+
+.dialogue-options {
+  list-style: none;
+  margin: 0;
+  padding: var(--finalist-padding-top) 1rem 0 var(--finalist-padding-left);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 320px;
+}
+.dialogue-options li {
+  position: relative;
+  font-family: var(--ui);
+  font-size: var(--finalist-font-size);
+  letter-spacing: var(--finalist-letter-spacing);
+  line-height: 1.32;
+  color: #ffffff;
+  margin-bottom: 0.9rem;
+  padding-left: 2rem;
+  /* 8-direction black stroke + soft outer shadow, driven by --finalist-stroke */
+  text-shadow:
+    calc(var(--finalist-stroke) * -1) calc(var(--finalist-stroke) * -1) 0 #000,
+    var(--finalist-stroke) calc(var(--finalist-stroke) * -1) 0 #000,
+    calc(var(--finalist-stroke) * -1) var(--finalist-stroke) 0 #000,
+    var(--finalist-stroke) var(--finalist-stroke) 0 #000,
+    calc(var(--finalist-stroke) * -1) 0 0 #000,
+    var(--finalist-stroke) 0 0 #000,
+    0 calc(var(--finalist-stroke) * -1) 0 #000,
+    0 var(--finalist-stroke) 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.95);
+  transition: opacity 0.45s ease, filter 0.45s ease;
+}
+.dialogue-options li:last-child { margin-bottom: 0; }
+.dialogue-options li .num {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.dialogue-options li .vote-meta {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+/* When at least one option leads, dim the others so the leader stays prominent.
+   Text stays readable, just less bright. */
+.dialogue-options:has(.leading) li:not(.leading) {
+  opacity: 0.55;
+  filter: brightness(0.75);
+}
+
+/* Hidden until we put them back later */
+.dialogue-options li.leading::after { display: none !important; }
+.vote-timer-wrap                    { display: none !important; }
+
+/* ============================================================
+   Winner reveal: same dialogue layout, options fade away,
+   the winner stays + scales + glows like it was clicked.
+   ============================================================ */
+#voting.winner-mode .dialogue-title,
+#voting.winner-mode .vote-timer-wrap {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#voting.winner-mode .dialogue-options li:not(.is-winner) {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#voting.winner-mode .dialogue-options li.is-winner {
+  /* Keep visible at original position, then "click flash" then settle into pulsing glow */
+  animation:
+    winner-click 1.2s cubic-bezier(0.18, 1.2, 0.4, 1) 0.05s forwards,
+    winner-pulse 2.8s ease-in-out 1.25s infinite;
+  z-index: 5;
+}
+#voting.winner-mode .dialogue-options li.is-winner::after {
+  /* drop the leading-arrow during winner reveal so it doesn't compete with the glow */
+  display: none;
+}
+#voting.winner-mode .dialogue-options li.is-winner .vote-meta {
+  opacity: 0.6;
+  letter-spacing: 0.22em;
+}
+
+/* Winner reveal: glow in place, NO scale-up. */
+@keyframes winner-click {
+  0%   { filter: brightness(1)   drop-shadow(0 0 0   rgba(243, 217, 140, 0)); }
+  18%  { filter: brightness(2.2) drop-shadow(0 0 22px rgba(255, 250, 220, 1)); }
+  100% { filter: brightness(1.2) drop-shadow(0 0 22px rgba(243, 217, 140, 0.75)); }
+}
+@keyframes winner-pulse {
+  0%, 100% { filter: brightness(1.15) drop-shadow(0 0 18px rgba(243, 217, 140, 0.55)); }
+  50%      { filter: brightness(1.35) drop-shadow(0 0 32px rgba(243, 217, 140, 0.9)); }
+}
+.finalists li.leading {
+  background: rgba(106, 143, 181, 0.15);
+  border-left-color: var(--gold-bright);
+  box-shadow: inset 0 0 30px rgba(243, 217, 140, 0.08);
+}
+.finalists li.leading::after {
+  /* Stepper Arrow points at the leading option */
+  content: '';
+  position: absolute;
+  left: -34px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 32px;
+  background: url('/assets/images/Stepper%20Arrow.png') no-repeat center / contain;
+  filter: drop-shadow(0 0 6px rgba(243, 217, 140, 0.7));
+  animation: arrow-nudge 1.4s ease-in-out infinite;
+}
+@keyframes arrow-nudge {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50%      { transform: translateY(-50%) translateX(5px); }
+}
+.finalists li .num {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--parchment-edge);
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  text-shadow: 0 0 6px rgba(243, 217, 140, 0.5);
+}
+.finalists li .text {
+  flex: 1;
+  line-height: 1.35;
+}
+.finalists li .vote-bar-wrap {
+  flex: 0 0 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+.finalists li .vote-count {
+  font-family: var(--ui);
+  font-size: 1.5rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.1em;
+}
+.finalists li .vote-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--bar-bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.finalists li .vote-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  width: 0%;
+  transition: width 0.25s ease;
+  box-shadow: 0 0 8px rgba(243, 217, 140, 0.5);
+}
+
+/* Skyrim stamina-bar look - driven by JS sets width based on real timer */
+.timer-bar {
+  height: 18px;
+  background: linear-gradient(180deg,
+    #050302 0%,
+    #0c0907 50%,
+    #050302 100%);
+  border: 1px solid rgba(216, 181, 106, 0.55);
+  border-radius: 1px;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0 rgba(216, 181, 106, 0.1),
+    0 0 6px rgba(0, 0, 0, 0.6);
+  margin-top: 0.6rem;
+  position: relative;
+  overflow: visible;
+}
+.timer-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(180deg,
+    #2d4810 0%,
+    #5a9430 22%,
+    #8dc94f 50%,
+    #5a9430 78%,
+    #2d4810 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 0 8px rgba(141, 201, 79, 0.4);
+  transition: width 0.18s linear;
+  position: relative;
+}
+.timer-fill::after {
+  /* glowing leading edge */
+  content: '';
+  position: absolute;
+  right: -1px; top: -2px; bottom: -2px;
+  width: 3px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    #ffffff 50%,
+    transparent 100%);
+  box-shadow:
+    0 0 6px #aacc55,
+    0 0 14px rgba(141, 201, 79, 0.95),
+    0 0 22px rgba(141, 201, 79, 0.5);
+}
+.timer-text {
+  font-family: var(--ui);
+  text-align: center;
+  font-size: 1.7rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  margin-top: 0.5rem;
+}
+
+#winner {
+  text-align: center;
+  padding: 0.6rem 0;
+  position: relative;
+  overflow: visible;
+}
+/* winner panel uses no background image - the stamp + sparkles + embers + glow ring carry it */
+.winner-stamp,
+.winner-text,
+.winner-votes {
+  position: relative;
+  z-index: 2;
+}
+.winner-stamp {
+  display: inline-block;
+  font-family: var(--ui);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  padding: 0.6rem 2.6rem 0.6rem 3.1rem;
+  border: 2px solid var(--gold-bright);
+  color: var(--gold-bright);
+  margin-bottom: 1.4rem;
+  text-shadow: 0 0 14px rgba(243, 217, 140, 0.75), 0 0 26px rgba(243, 217, 140, 0.35);
+  box-shadow: 0 0 30px rgba(243, 217, 140, 0.3), inset 0 0 14px rgba(243, 217, 140, 0.12);
+  animation: stamp 0.55s cubic-bezier(0.18, 1.2, 0.4, 1);
+}
+@keyframes stamp {
+  0%   { transform: scale(2.2) rotate(-6deg); opacity: 0; filter: blur(4px); }
+  60%  { transform: scale(0.92) rotate(1deg);  opacity: 1; filter: blur(0); }
+  100% { transform: scale(1) rotate(0); }
+}
+.winner-text {
+  font-family: var(--ui);
+  font-weight: 400;
+  font-size: 3.2rem;
+  color: var(--ink-bright);
+  margin: 0.8rem 0 1.2rem;
+  text-shadow:
+    0 0 8px rgba(243, 217, 140, 0.55),
+    0 0 24px rgba(243, 217, 140, 0.35),
+    0 2px 0 rgba(0, 0, 0, 0.9);
+  animation: winner-text-in 0.7s ease-out 0.15s both;
+}
+@keyframes winner-text-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.winner-votes {
+  font-family: var(--ui);
+  font-size: 1.55rem;
+  letter-spacing: 0.3em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  animation: winner-text-in 0.7s ease-out 0.3s both;
+}
+
+/* ==== Winner-screen FX: glow ring, sparkles, embers ==== */
+.glow-ring {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 360px; height: 360px;
+  margin-left: -180px; margin-top: -180px;
+  background: radial-gradient(circle,
+    rgba(243, 217, 140, 0.35) 0%,
+    rgba(243, 217, 140, 0.12) 35%,
+    transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  animation: glow-pulse 2.6s ease-in-out infinite;
+  filter: blur(2px);
+}
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(0.95); opacity: 0.65; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+.sparkles, .embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+.sparkle {
+  position: absolute;
+  left: 50%; top: 40%;
+  width: 8px; height: 8px;
+  background: radial-gradient(circle,
+    #fff8e0 0%,
+    var(--gold-bright) 35%,
+    var(--gold) 65%,
+    transparent 75%);
+  border-radius: 50%;
+  filter: blur(0.5px);
+  box-shadow: 0 0 10px rgba(243, 217, 140, 0.8);
+  transform: translate(-50%, -50%) scale(0);
+  animation: sparkle-fly var(--dur, 1.4s) cubic-bezier(0.25, 0.6, 0.3, 1) var(--delay, 0s) forwards;
+}
+@keyframes sparkle-fly {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  10%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.15);
+         opacity: 0; }
+}
+
+.ember {
+  position: absolute;
+  bottom: -4px;
+  width: 4px; height: 4px;
+  background: var(--gold-bright);
+  border-radius: 50%;
+  filter: blur(1px);
+  box-shadow: 0 0 8px var(--gold-bright), 0 0 14px rgba(216, 181, 106, 0.5);
+  opacity: 0;
+  animation: ember-rise var(--dur, 4s) linear forwards;
+}
+@keyframes ember-rise {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: translate(var(--drift, 0px), -240px) scale(0.4); opacity: 0; }
+}

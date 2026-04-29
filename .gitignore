@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+build/
+dist/
+
+# User-specific runtime state (contains Twitch tokens + client ID)
+settings/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+*.swp

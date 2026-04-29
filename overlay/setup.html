@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skyrim RP Bot - Setup</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" />
+  <link rel="stylesheet" href="/dashboard.css" />
+  <link rel="stylesheet" href="/setup.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <h1>Skyrim RP Bot - Setup</h1>
+    </div>
+    <div class="step-pill"><span id="step-num">1</span> / 5</div>
+  </header>
+
+  <main class="setup-main">
+
+    <!-- STEP 1: Welcome -->
+    <section class="step active" data-step="1">
+      <div class="card">
+        <h2>Welcome</h2>
+        <p>This is a one-time setup, takes ~3 minutes. You'll need:</p>
+        <ul class="checklist">
+          <li>A Twitch account (the channel where the bot will run)</li>
+          <li>Internet access</li>
+          <li>OBS Studio installed</li>
+        </ul>
+        <p class="hint">No coding required. The bot remembers everything once you finish, so you only do this once.</p>
+        <div class="actions">
+          <button class="btn btn-gold" data-go="2">Begin →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Twitch app registration -->
+    <section class="step" data-step="2">
+      <div class="card">
+        <h2>Step 1 - Register a Twitch app</h2>
+        <p>Twitch needs to know about your bot. This is free and takes a minute.</p>
+        <ol class="numbered">
+          <li>Open the Twitch Developer Console:
+            <span class="link-pair">
+              <a class="link-btn ext-link" href="https://dev.twitch.tv/console/apps" data-url="https://dev.twitch.tv/console/apps">Open dev.twitch.tv ↗</a>
+              <button class="btn btn-mini link-copy" data-copy="https://dev.twitch.tv/console/apps">Copy URL</button>
+            </span>
+          </li>
+          <li>Click <b>Register Your Application</b>.</li>
+          <li>Fill in the form:
+            <div class="kv">
+              <div class="row"><span class="k">Name</span> <span class="v">anything (e.g. "My RP Bot")</span></div>
+              <div class="row">
+                <span class="k">OAuth Redirect URLs</span>
+                <span class="v copy-target" data-copy="http://localhost"><code>http://localhost</code> <button class="btn btn-mini copy-btn">Copy</button></span>
+              </div>
+              <div class="row"><span class="k">Category</span> <span class="v">Chat Bot</span></div>
+              <div class="row"><span class="k">Client Type</span> <span class="v">Public</span></div>
+            </div>
+          </li>
+          <li>Click <b>Create</b>, then on the new app click <b>Manage</b>.</li>
+          <li>Copy the <b>Client ID</b> from that page - you'll paste it in the next step.</li>
+        </ol>
+        <div class="actions">
+          <button class="btn" data-go="1">← Back</button>
+          <button class="btn btn-gold" data-go="3">I have my Client ID →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Enter Client ID + Channel -->
+    <section class="step" data-step="3">
+      <div class="card">
+        <h2>Step 2 - Paste Client ID &amp; channel</h2>
+        <label class="field">
+          <span class="label">Twitch Client ID</span>
+          <input id="client-id" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. b65ltvkh9m5mncb..." />
+        </label>
+        <label class="field">
+          <span class="label">Twitch channel name <span class="muted">(without #)</span></span>
+          <input id="channel" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. tr4shcam" />
+        </label>
+        <p class="error-line" id="config-error"></p>
+        <div class="actions">
+          <button class="btn" data-go="2">← Back</button>
+          <button class="btn btn-gold" id="save-config">Save &amp; continue →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Authorize -->
+    <section class="step" data-step="4">
+      <div class="card">
+        <h2>Step 3 - Authorize on Twitch</h2>
+        <p>Click the button below. Twitch will show you a code you'll paste at twitch.tv/activate.</p>
+
+        <div id="auth-pre">
+          <div class="actions">
+            <button class="btn" data-go="3">← Back</button>
+            <button class="btn btn-gold" id="start-auth">Generate code →</button>
+          </div>
+        </div>
+
+        <div id="auth-progress" class="hidden">
+          <div class="auth-code-box">
+            <div class="muted">Your code</div>
+            <div class="code-row">
+              <code id="user-code">-</code>
+              <button class="btn btn-mini" id="copy-code">Copy</button>
+            </div>
+          </div>
+          <ol class="numbered">
+            <li>Open
+              <span class="link-pair">
+                <a id="verify-link" class="link-btn ext-link" href="#" data-url="">twitch.tv/activate ↗</a>
+                <button class="btn btn-mini link-copy" id="copy-verify" data-copy="">Copy URL</button>
+              </span>
+            </li>
+            <li>Paste the code above and click <b>Activate</b>.</li>
+            <li>When prompted, sign in with the channel's Twitch account and click <b>Authorize</b>.</li>
+          </ol>
+          <p id="auth-status" class="hint">Waiting for authorization…</p>
+        </div>
+
+        <div id="auth-success" class="hidden">
+          <p class="success">✓ Authorized as <b id="auth-login">…</b></p>
+          <div class="actions">
+            <button class="btn btn-gold" data-go="5">Continue →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: OBS -->
+    <section class="step" data-step="5">
+      <div class="card">
+        <h2>Step 4 - Set up OBS</h2>
+        <p>Add a Browser Source to the scene where you want the panel to appear.</p>
+        <ol class="numbered">
+          <li>In OBS, in the <b>Sources</b> panel, click <b>+</b> → <b>Browser</b>.</li>
+          <li>Name it <code>Skyrim RP Panel</code>, click OK.</li>
+          <li>Set the properties:
+            <div class="kv">
+              <div class="row">
+                <span class="k">URL</span>
+                <span class="v copy-target" data-copy="http://localhost:3000/overlay/">
+                  <code>http://localhost:3000/overlay/</code>
+                  <button class="btn btn-mini copy-btn">Copy</button>
+                </span>
+              </div>
+              <div class="row"><span class="k">Width</span>  <span class="v"><b>1920</b></span></div>
+              <div class="row"><span class="k">Height</span> <span class="v"><b>1080</b></span></div>
+              <div class="row"><span class="k">Custom CSS</span> <span class="v">(leave default)</span></div>
+              <div class="row"><span class="k">"Shutdown source when not visible"</span> <span class="v">leave OFF</span></div>
+              <div class="row"><span class="k">"Refresh browser when scene becomes active"</span> <span class="v">ON (recommended)</span></div>
+            </div>
+          </li>
+          <li>Click OK. The browser source will be transparent until a round is active.</li>
+        </ol>
+        <p class="hint">1920 × 1080 covers the full stream canvas. You can re-position and scale it within OBS as needed.</p>
+        <div class="actions">
+          <button class="btn" data-go="4">← Back</button>
+          <button class="btn btn-gold" id="finish">Finish setup →</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/setup.js"></script>
+</body>
+</html>

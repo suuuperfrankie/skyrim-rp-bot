@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skyrim RP Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="root" class="hidden">
+
+    <!-- COLLECTING: top-right corner panel ("Type !suggest...") -->
+    <section id="collecting" class="phase">
+      <div class="frame">
+        <div class="footer-cap" aria-hidden="true"></div>
+        <header class="banner">
+          <div class="banner-icon" aria-hidden="true">◆</div>
+          <h1 id="title">CHAT SUGGESTIONS</h1>
+          <div class="banner-icon" aria-hidden="true">◆</div>
+        </header>
+        <p class="instruction">Type <code>!suggest &lt;your idea&gt;</code> in chat</p>
+        <div class="counter">
+          <span id="suggestion-count">0</span>
+          <span class="counter-label">suggestions</span>
+        </div>
+        <div class="timer-bar"><div id="timer-fill" class="timer-fill"></div></div>
+        <div class="timer-text"><span id="timer-text">--</span>s</div>
+      </div>
+    </section>
+
+    <!-- VOTING (also handles winner reveal): centered Skyrim dialogue layout -->
+    <section id="voting" class="phase">
+      <img class="dialogue-png" src="/assets/images/Dialogue%20Selector.png" alt="" aria-hidden="true" />
+      <div class="dialogue-title">Chat Decides</div>
+      <div class="title-timer"><div class="title-timer-fill" id="title-timer-fill"></div></div>
+      <div class="dialogue">
+        <ol class="dialogue-options" id="finalists"></ol>
+      </div>
+      <div class="vote-timer-wrap">
+        <div class="timer-bar"><div id="vote-timer-fill" class="timer-fill"></div></div>
+        <div class="timer-text"><span id="vote-timer-text">--</span>s</div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="overlay.js"></script>
+</body>
+</html>

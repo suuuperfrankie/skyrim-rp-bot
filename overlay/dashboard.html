@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skyrim RP Bot - Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" />
+  <link rel="stylesheet" href="/dashboard.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <h1>Skyrim RP Bot</h1>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="settings">Settings</button>
+      <button class="tab" data-tab="customize">Customize</button>
+      <button class="tab" data-tab="log">Log</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="status-pill" id="conn-pill">connecting…</div>
+      <div class="cog-wrap">
+        <button class="cog-btn" id="cog-btn" title="Settings" aria-label="Settings">⚙</button>
+        <div class="cog-menu hidden" id="cog-menu">
+          <div class="cog-version">v<span id="cog-version">…</span></div>
+          <button class="cog-item" id="cog-update">Check for Updates</button>
+          <a class="cog-item" id="cog-releases" href="#" target="_blank" rel="noopener">Releases on GitHub ↗</a>
+          <div class="cog-divider"></div>
+          <button class="cog-item" id="cog-reset">Re-run Setup Wizard</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="row">
+        <div class="card card-status">
+          <h2>Status</h2>
+          <dl class="status-list">
+            <dt>Channel</dt><dd id="status-channel">-</dd>
+            <dt>Phase</dt><dd id="status-phase" class="phase-badge">idle</dd>
+            <dt>Time left</dt><dd id="status-time">-</dd>
+            <dt>Auto mode</dt><dd id="status-auto">-</dd>
+          </dl>
+        </div>
+
+        <div class="card card-controls">
+          <h2>Controls</h2>
+          <div class="actions">
+            <button id="btn-start" class="btn btn-gold">▶  Start Round  (!rp)</button>
+            <button id="btn-stop"  class="btn btn-danger">■  Stop Round  (!stoprp)</button>
+            <button id="btn-force-vote" class="btn btn-gold" disabled>⏭  Force Voting</button>
+            <button id="btn-test"  class="btn btn-test">⚙  Test Overlay</button>
+          </div>
+          <p class="hint">Test runs a fake round in the OBS overlay (no chat, no real state) so you can preview sizing.</p>
+          <h3>OBS Browser Source URL</h3>
+          <div class="copybox">
+            <code id="obs-url">http://localhost:3000/overlay/</code>
+            <button id="btn-copy" class="btn btn-mini">Copy</button>
+          </div>
+          <p class="hint">Recommended size: <b>1920 × 1080</b> (full stream canvas).</p>
+        </div>
+      </div>
+
+      <div class="card card-current">
+        <h2>Current Round</h2>
+        <div id="round-info" class="round-info">
+          <p class="empty">No round running. Click <b>Start Round</b> or type <code>!rp</code> in chat.</p>
+        </div>
+      </div>
+
+      <div class="card card-last">
+        <h2>Last Round's Winner</h2>
+        <div id="last-winner" class="last-winner">
+          <p class="empty">Waiting for the first round to finish.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-settings" class="tab-content">
+      <div class="card card-settings">
+        <h2>Round Settings</h2>
+        <p class="hint">Changes save instantly. The bot's chat messages use these values, so updating a timer also updates the announcement (e.g., "you have 30s").</p>
+        <div id="settings-form" class="settings-form"></div>
+        <p class="hint" id="settings-status"></p>
+      </div>
+    </section>
+
+    <section id="tab-customize" class="tab-content">
+      <div class="card card-customize">
+        <div class="customize-header">
+          <h2>Customize Overlay</h2>
+          <div class="customize-actions">
+            <button class="btn btn-mini" id="customize-reset">Reset all</button>
+            <button class="btn btn-mini" id="customize-test">Run test preview</button>
+          </div>
+        </div>
+        <p class="hint">Drag a slider or type a value. Changes apply live to the OBS overlay and persist between sessions.</p>
+        <div id="customize-form" class="customize-form"></div>
+      </div>
+    </section>
+
+    <section id="tab-log" class="tab-content">
+      <div class="card card-log-full">
+        <div class="log-header">
+          <h2>Log</h2>
+          <div class="log-controls">
+            <label class="check"><input type="checkbox" id="autoscroll" checked /> Auto-scroll</label>
+            <button id="btn-clear-log" class="btn btn-mini">Clear</button>
+          </div>
+        </div>
+        <div id="log" class="log" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>
