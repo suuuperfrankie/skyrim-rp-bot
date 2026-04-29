@@ -91,9 +91,8 @@ export function createServer({ config: initialConfig, state }) {
       authenticated: !!liveTokens?.access_token,
       botReady,
       packaged: !!process.pkg,           // true when running as a built .exe
-      // edit this URL once a real GitHub repo exists
-      githubLatestUrl: 'https://api.github.com/repos/your-username/skyrim-rp-bot/releases/latest',
-      githubReleasesPage: 'https://github.com/your-username/skyrim-rp-bot/releases'
+      githubLatestUrl: 'https://api.github.com/repos/suuuperfrankie/skyrim-rp-bot/releases/latest',
+      githubReleasesPage: 'https://github.com/suuuperfrankie/skyrim-rp-bot/releases'
     });
   });
 
