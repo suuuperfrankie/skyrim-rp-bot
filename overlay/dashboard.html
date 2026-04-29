@@ -44,6 +44,12 @@
             <dt>Phase</dt><dd id="status-phase" class="phase-badge">idle</dd>
             <dt>Time left</dt><dd id="status-time">-</dd>
             <dt>Auto mode</dt><dd id="status-auto">-</dd>
+            <dt>Bot Messages</dt><dd>
+              <label class="chat-toggle">
+                <input type="checkbox" id="status-chat-toggle" />
+                <span id="status-chat-label">on</span>
+              </label>
+            </dd>
           </dl>
         </div>
 
@@ -81,11 +87,28 @@
     </section>
 
     <section id="tab-settings" class="tab-content">
+      <div class="card">
+        <h2>Roleplay Mode</h2>
+        <p class="hint">Mixed = random finalists. Serious / Funny prioritize suggestions that fit the chosen vibe (still picks from real chat suggestions; just biases the selection).</p>
+        <div class="mode-toggle" id="mode-toggle">
+          <button class="btn mode-btn" data-mode="mixed">Mixed</button>
+          <button class="btn mode-btn" data-mode="serious">Serious RP</button>
+          <button class="btn mode-btn" data-mode="funny">Funny RP</button>
+        </div>
+        <p class="hint">A small label appears in the OBS suggestion panel showing the active mode (hidden in Mixed).</p>
+      </div>
+
       <div class="card card-settings">
         <h2>Round Settings</h2>
         <p class="hint">Changes save instantly. The bot's chat messages use these values, so updating a timer also updates the announcement (e.g., "you have 30s").</p>
         <div id="settings-form" class="settings-form"></div>
         <p class="hint" id="settings-status"></p>
+      </div>
+
+      <div class="card">
+        <h2>Stream Deck / Hotkey URLs</h2>
+        <p class="hint">Use the Stream Deck "Website" or "System: Open" action with these URLs (no plugin needed). They take effect instantly. Mod/broadcaster auth is bypassed because they're called from your local machine.</p>
+        <div class="copybox-list" id="streamdeck-urls"></div>
       </div>
     </section>
 

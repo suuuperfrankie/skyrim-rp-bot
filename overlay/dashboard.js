@@ -163,8 +163,33 @@
       const s = await r.json();
       els.channel.textContent = `#${s.channel || 'unknown'}`;
       els.auto.textContent = s.autoMode ? 'ON' : 'OFF';
+      const tog = document.getElementById('status-chat-toggle');
+      const lab = document.getElementById('status-chat-label');
+      if (tog) {
+        tog.checked = s.chatMessagesEnabled !== false;
+        if (lab) lab.textContent = tog.checked ? 'on' : 'off';
+      }
     } catch (_e) {}
   }
+  // Wire the chat-message toggle once; the initial state is set by fetchStatus().
+  (() => {
+    const tog = document.getElementById('status-chat-toggle');
+    const lab = document.getElementById('status-chat-label');
+    if (!tog) return;
+    tog.addEventListener('change', async () => {
+      try {
+        const r = await fetch('/api/chat-messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: tog.checked })
+        });
+        const j = await r.json();
+        if (j.ok && lab) lab.textContent = j.chatMessagesEnabled ? 'on' : 'off';
+      } catch (e) {
+        appendLog({ time: Date.now(), level: 'error', msg: `[dashboard] chat toggle failed: ${e.message}` });
+      }
+    });
+  })();
   async function callAction(path) {
     try {
       const r = await fetch(`/api/${path}`, { method: 'POST' });
@@ -281,6 +306,60 @@
     }
   }
   loadSettings();
+
+  // ----- Roleplay mode toggle -----
+  let currentMode = 'mixed';
+  function renderModeButtons() {
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === currentMode);
+    });
+  }
+  async function setMode(m) {
+    try {
+      const r = await fetch(`/api/mode/${encodeURIComponent(m)}`, { method: 'POST' });
+      const j = await r.json();
+      if (j.ok) { currentMode = j.mode; renderModeButtons(); }
+    } catch (_e) {}
+  }
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+  // pull current mode on load
+  fetch('/api/mode').then(r => r.json()).then(j => {
+    if (j.ok) { currentMode = j.mode; renderModeButtons(); }
+  }).catch(() => {});
+
+  // ----- Stream Deck / hotkey URL list -----
+  function renderStreamDeckUrls() {
+    const list = document.getElementById('streamdeck-urls');
+    if (!list) return;
+    const base = location.origin;
+    const rows = [
+      ['Start Round',   `${base}/api/start`],
+      ['Stop Round',    `${base}/api/stop`],
+      ['Force Voting',  `${base}/api/force-voting`],
+      ['Mode: Mixed',   `${base}/api/mode/mixed`],
+      ['Mode: Serious', `${base}/api/mode/serious`],
+      ['Mode: Funny',   `${base}/api/mode/funny`]
+    ];
+    list.innerHTML = rows.map(([label, url]) => `
+      <div class="row">
+        <label>${label}</label>
+        <code>${url}</code>
+        <button class="btn btn-mini" data-url="${url}">Copy</button>
+      </div>`).join('');
+    list.querySelectorAll('button[data-url]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.url);
+          const orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => (btn.textContent = orig), 1300);
+        } catch (_e) {}
+      });
+    });
+  }
+  renderStreamDeckUrls();
 
   // ----- Customize tab -----
   // Each entry: cssVariable, label, min, max, step, unit, default

@@ -11,6 +11,12 @@ export function createBot({ config, tokens, login, state }) {
 
   let autoModeTimer = null;
 
+  // Send a chat message only if the chat-messages toggle is on (default true).
+  function say(channel, msg) {
+    if (config.chatMessagesEnabled === false) return;
+    client.say(channel, msg);
+  }
+
   function isPrivileged(tags) {
     if (!config.modsCanTrigger) {
       return tags.username?.toLowerCase() === config.channel.toLowerCase();
@@ -33,7 +39,7 @@ export function createBot({ config, tokens, login, state }) {
       // welcome message is sent from the state-transition handler below,
       // so it fires for both chat trigger AND dashboard "Start Round" button.
       if (!state.startCollecting()) {
-        client.say(channel, `A round is already running.`);
+        say(channel, `A round is already running.`);
       }
       return;
     }
@@ -45,7 +51,7 @@ export function createBot({ config, tokens, login, state }) {
     ) {
       if (!isPrivileged(tags)) return;
       state.abort();
-      client.say(channel, `SAJ RP round stopped.`);
+      say(channel, `SAJ RP round stopped.`);
       return;
     }
 
@@ -72,11 +78,11 @@ export function createBot({ config, tokens, login, state }) {
     lastAnnouncedPhase = snap.phase;
 
     if (snap.phase === Phase.COLLECTING) {
-      client.say(config.channel, `DinkDonk CHAT SUGGESTIONS OPEN!! (Type "!suggest <your idea>" ) You have ${config.collectionSeconds}s.`);
+      say(config.channel, `DinkDonk CHAT SUGGESTIONS OPEN!! (Type "!suggest <your idea>" ) You have ${config.collectionSeconds}s.`);
     } else if (snap.phase === Phase.VOTING) {
-      client.say(config.channel, `DinkDonk VOTE: 1, 2, 3  •  ${config.votingSeconds}s.`);
+      say(config.channel, `DinkDonk VOTE: 1, 2, 3  •  ${config.votingSeconds}s.`);
     } else if (snap.phase === Phase.WINNER && snap.winner) {
-      client.say(
+      say(
         config.channel,
         `🏆 Winner: "${snap.winner.text}" (${snap.winner.votes} vote${snap.winner.votes === 1 ? '' : 's'})`
       );
@@ -85,7 +91,7 @@ export function createBot({ config, tokens, login, state }) {
 
   state.on('aborted', ({ reason }) => {
     if (reason === 'no-suggestions') {
-      client.say(config.channel, `SAJ No suggestions came in Round skipped.`);
+      say(config.channel, `SAJ No suggestions came in Round skipped.`);
     }
   });
 

@@ -1,6 +1,9 @@
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { migrateLegacySettings } from './paths.js';
+// Pull settings forward from any legacy <exe>/settings folder before any module reads them.
+migrateLegacySettings();
 import { loadConfig } from './config.js';
 import { tryExistingTokens } from './auth.js';
 import { RoundState } from './state.js';

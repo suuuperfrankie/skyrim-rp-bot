@@ -106,28 +106,57 @@ export function createServer({ config: initialConfig, state }) {
       votingSeconds: liveConfig.votingSeconds,
       winnerDisplaySeconds: liveConfig.winnerDisplaySeconds,
       finalistsCount: liveConfig.finalistsCount,
+      chatMessagesEnabled: liveConfig.chatMessagesEnabled !== false,
       botReady
     });
   });
-  app.post('/api/start', (_req, res) => {
-    if (testMode) return res.json({ ok: false, message: 'test running' });
-    if (!botReady)  return res.json({ ok: false, message: 'bot not connected yet' });
+
+  function doSetChatMessages(enabled) {
+    liveConfig.chatMessagesEnabled = !!enabled;
+    saveConfig(liveConfig);
+    return { ok: true, chatMessagesEnabled: liveConfig.chatMessagesEnabled };
+  }
+  app.post('/api/chat-messages', (req, res) => res.json(doSetChatMessages(req.body?.enabled)));
+  app.get( '/api/chat-messages/on',  (_req, res) => res.json(doSetChatMessages(true)));
+  app.get( '/api/chat-messages/off', (_req, res) => res.json(doSetChatMessages(false)));
+  // ----- Action handlers (used by both POST and GET routes for Stream Deck friendliness) -----
+  function doStart() {
+    if (testMode) return { ok: false, message: 'test running' };
+    if (!botReady) return { ok: false, message: 'bot not connected yet' };
     const ok = state.startCollecting();
-    res.json({ ok, phase: state.phase });
-  });
-  app.post('/api/stop', (_req, res) => {
-    state.abort();
-    res.json({ ok: true, phase: state.phase });
-  });
-  app.post('/api/force-voting', (_req, res) => {
-    if (testMode) return res.json({ ok: false, message: 'test running' });
+    return { ok, phase: state.phase };
+  }
+  function doStop() { state.abort(); return { ok: true, phase: state.phase }; }
+  function doForceVoting() {
+    if (testMode) return { ok: false, message: 'test running' };
     const ok = state.forceVoting();
-    res.json({
+    return {
       ok,
       message: ok ? null : (state.phase !== 'collecting' ? 'not in collection phase' : 'no suggestions yet'),
       phase: state.phase
-    });
-  });
+    };
+  }
+  function doSetMode(mode) {
+    const valid = ['mixed', 'serious', 'funny'];
+    if (!valid.includes(mode)) return { ok: false, message: `mode must be one of: ${valid.join(', ')}` };
+    liveConfig.roleplayMode = mode;
+    saveConfig(liveConfig);
+    // push current state so overlay picks up the new mode tag immediately
+    safeBroadcast({ type: 'state', payload: state.snapshot() });
+    return { ok: true, mode };
+  }
+
+  app.post('/api/start', (_req, res) => res.json(doStart()));
+  app.get( '/api/start', (_req, res) => res.json(doStart()));
+  app.post('/api/stop',  (_req, res) => res.json(doStop()));
+  app.get( '/api/stop',  (_req, res) => res.json(doStop()));
+  app.post('/api/force-voting', (_req, res) => res.json(doForceVoting()));
+  app.get( '/api/force-voting', (_req, res) => res.json(doForceVoting()));
+  // Mode endpoints (Stream Deck can hit /api/mode/funny etc. directly).
+  app.post('/api/mode',          (req, res) => res.json(doSetMode(req.body?.mode)));
+  app.get( '/api/mode',          (_req, res) => res.json({ ok: true, mode: liveConfig.roleplayMode || 'mixed' }));
+  app.get( '/api/mode/:mode',    (req, res) => res.json(doSetMode(req.params.mode)));
+  app.post('/api/mode/:mode',    (req, res) => res.json(doSetMode(req.params.mode)));
 
   // ----- Settings (round timings, finalist count, etc.) -----
   const SETTING_FIELDS = {

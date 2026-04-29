@@ -35,6 +35,121 @@ function censor(text) {
   });
 }
 
+// Words that aren't profanity (so don't get masked) but DO disrupt serious roleplay
+// — used to filter the serious-mode finalist pool. Combined with PROFANITY they form
+// the full "block list" for serious mode.
+const CRUDE_WORDS = new Set([
+  // bathroom / scatology
+  'fart', 'farts', 'farting', 'farted', 'fartz',
+  'poop', 'poops', 'pooping', 'pooped', 'poo', 'poopy', 'turd', 'turds',
+  'pee', 'pees', 'peeing', 'peed', 'pissed', 'pissing',
+  'diarrhea', 'crap', 'craps', 'crappy',
+  'puke', 'puking', 'puked', 'vomit', 'vomiting', 'vomited', 'barf', 'barfing',
+  // sexual / body
+  'sex', 'sexy', 'sexual', 'sexuality',
+  'cum', 'cums', 'cumming',
+  'orgasm', 'horny', 'erection', 'erect',
+  'butt', 'butts', 'booty', 'arse',
+  'penis', 'dick', 'dicks', 'cock', 'cocks',
+  'vagina', 'pussy', 'twat',
+  'boob', 'boobs', 'tit', 'tits', 'titties',
+  'naked', 'nudes', 'nude',
+  'masturbate', 'masturbating', 'jerk', 'jerking',
+  'rape', 'raping', 'raped',
+  // generic shock
+  'kill', 'murder', 'die', 'dead', 'suicide'
+]);
+
+function containsBlockedWord(text) {
+  const words = String(text).toLowerCase().match(/\p{L}+/gu) || [];
+  for (const w of words) {
+    if (PROFANITY.has(w)) return true;
+    if (CRUDE_WORDS.has(w)) return true;
+  }
+  return false;
+}
+
+// Used for de-duplicate detection: collapse to lowercase letters/digits/spaces only.
+function normalizeForDedupe(text) {
+  return String(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ---- Heuristic scoring for roleplay mode ----
+// Used to pick finalists when more suggestions than slots are available.
+// Higher score = better fit for the chosen mode.
+const FUNNY_HINTS = /\b(lol|lmao|lmfao|haha|hehe|rofl|xd|omg|lulz|kek|kekw|bruh|bro|sus|cringe|wtf|smh|yeet)\b/i;
+const EMOJI_RE   = /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/u;
+const SERIOUS_HINTS = /\b(carefully|consider|approach|negotiate|persuade|inform|propose|reflect|honor|honour|duty|loyal|witness|pledge|swear|reveal|confront|investigate|whisper|approach)\b/i;
+
+export function funnyScore(text) {
+  const t = String(text || '');
+  let s = 0;
+  if (t.length > 0 && t.length < 40)  s += 3;
+  else if (t.length < 70)             s += 1;
+  if (/[!?]{2,}/.test(t))             s += 2;
+  if (EMOJI_RE.test(t))               s += 3;
+  if (FUNNY_HINTS.test(t))            s += 4;
+  // ALL CAPS bonus (only if at least 4 chars and majority alpha)
+  const alpha = t.replace(/[^a-zA-Z]/g, '');
+  if (alpha.length >= 4 && alpha === alpha.toUpperCase()) s += 2;
+  // very short single-clause statements
+  const wordCount = t.split(/\s+/).filter(Boolean).length;
+  if (wordCount <= 5) s += 1;
+  return s;
+}
+
+export function seriousScore(text) {
+  const t = String(text || '');
+  let s = 0;
+  // Length: longer thoughtful suggestions get a boost
+  if (t.length > 35)  s += 2;
+  if (t.length > 70)  s += 2;
+  // Multiple words / clauses
+  const wordCount = t.split(/\s+/).filter(Boolean).length;
+  if (wordCount >= 7) s += 2;
+  if (wordCount >= 12) s += 1;
+  // Properly capitalized first letter
+  if (/^[A-Z]/.test(t)) s += 1;
+  // Ends with sensible punctuation (not !!)
+  if (/[.!?]$/.test(t) && !/[!?]{2,}$/.test(t)) s += 1;
+  // No emoji bonus
+  if (!EMOJI_RE.test(t)) s += 1;
+  // No funny-slang bonus
+  if (!FUNNY_HINTS.test(t)) s += 1;
+  // Roleplay-style verbs
+  if (SERIOUS_HINTS.test(t)) s += 3;
+  return s;
+}
+
+function pickFinalistsForMode(pool, count, mode) {
+  if (mode === 'serious') {
+    // Filter out anything containing crude/profane words. Fall back to the full pool
+    // ONLY if filtering leaves us with too few — better to have a finalist than none.
+    const clean = pool.filter(s => !s.isCrude);
+    const usePool = clean.length >= count ? clean : (clean.length > 0 ? clean : pool);
+    const scored = usePool.map(s => ({ s, score: seriousScore(s.text) + Math.random() * 0.1 }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, count).map(x => x.s);
+  }
+  if (mode === 'funny') {
+    const scored = pool.map(s => ({ s, score: funnyScore(s.text) + Math.random() * 0.1 }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, count).map(x => x.s);
+  }
+  // 'mixed' (default) — random pick
+  const local = [...pool];
+  const out = [];
+  while (out.length < count && local.length) {
+    const idx = Math.floor(Math.random() * local.length);
+    out.push(local.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
 export class RoundState extends EventEmitter {
   constructor(config) {
     super();
@@ -59,6 +174,7 @@ export class RoundState extends EventEmitter {
       winner: this.winner,
       endsAt: this.endsAt,
       suggestionCount: this.suggestions.length,
+      mode: this.config.roleplayMode || 'mixed',
       config: {
         collectionSeconds: this.config.collectionSeconds,
         votingSeconds: this.config.votingSeconds,
@@ -98,10 +214,17 @@ export class RoundState extends EventEmitter {
   addSuggestion(user, text) {
     if (this.phase !== Phase.COLLECTING) return false;
     if (this.suggestionUsers.has(user)) return false;
-    const trimmed = censor(text.trim()).slice(0, this.config.maxSuggestionLength);
+    const raw = text.trim();
+    const trimmed = censor(raw).slice(0, this.config.maxSuggestionLength);
     if (!trimmed) return false;
+    // Reject if a near-identical suggestion already exists in this round
+    // (case + punctuation insensitive).
+    const norm = normalizeForDedupe(trimmed);
+    if (norm && this.suggestions.some(s => normalizeForDedupe(s.text) === norm)) return false;
     this.suggestionUsers.add(user);
-    this.suggestions.push({ user, text: trimmed });
+    // isCrude is checked against the RAW text so words like "shit"/"cum" are flagged
+    // even though they get censored in the displayed text.
+    this.suggestions.push({ user, text: trimmed, isCrude: containsBlockedWord(raw) });
     this.emit('change', this.snapshot());
     return true;
   }
@@ -116,12 +239,8 @@ export class RoundState extends EventEmitter {
     if (this.suggestions.length <= this.config.finalistsCount) {
       this.finalists = [...this.suggestions];
     } else {
-      const pool = [...this.suggestions];
-      this.finalists = [];
-      while (this.finalists.length < count && pool.length) {
-        const idx = Math.floor(Math.random() * pool.length);
-        this.finalists.push(pool.splice(idx, 1)[0]);
-      }
+      const mode = this.config.roleplayMode || 'mixed';
+      this.finalists = pickFinalistsForMode(this.suggestions, count, mode);
     }
     this.voteCounts = this.finalists.map(() => 0);
     this._setPhase(Phase.VOTING, this.config.votingSeconds);

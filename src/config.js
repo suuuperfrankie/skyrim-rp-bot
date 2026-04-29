@@ -2,9 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { appPath } from './paths.js';
+import { SETTINGS_DIR } from './paths.js';
 
-const SETTINGS_DIR = appPath('settings');
 const CONFIG_PATH = path.join(SETTINGS_DIR, 'config.json');
 const TOKENS_PATH = path.join(SETTINGS_DIR, 'tokens.json');
 
@@ -20,7 +19,9 @@ const DEFAULTS = {
   autoMode: false,
   autoModeCooldownSeconds: 60,
   modsCanTrigger: true,
-  theme: 'skyrim'
+  theme: 'skyrim',
+  roleplayMode: 'mixed',     // 'mixed' | 'serious' | 'funny'
+  chatMessagesEnabled: true  // when false, bot still works but doesn't post in chat
 };
 
 function ensureDir() {

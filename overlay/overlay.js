@@ -9,6 +9,7 @@
   const voteTimerFill = document.getElementById('vote-timer-fill');
   const voteTimerText = document.getElementById('vote-timer-text');
   const titleTimerFill = document.getElementById('title-timer-fill');
+  const modeTag = document.getElementById('mode-tag');
   const finalistsEl = document.getElementById('finalists');
 
   const PHASE_TITLES = {
@@ -232,6 +233,13 @@
       transition(currentPhase, snap.phase, snap);
     } else if (snap.endsAt && snap.endsAt !== endsAt) {
       endsAt = snap.endsAt;
+    }
+
+    // mode tag (small label on the suggestion panel)
+    if (modeTag) {
+      const m = snap.mode || 'mixed';
+      if (m === 'mixed') { modeTag.hidden = true; modeTag.textContent = ''; }
+      else { modeTag.hidden = false; modeTag.textContent = `${m} mode`; modeTag.className = `mode-tag ${m}`; }
     }
 
     // dynamic content per phase (re-render on every snapshot during voting)

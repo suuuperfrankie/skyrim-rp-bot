@@ -1,6 +1,6 @@
 {
   "name": "skyrim-rp-bot",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Twitch chat bot that collects !suggest RP prompts and lets chat vote 1/2/3, with an OBS overlay.",
   "main": "src/index.js",
   "type": "module",
